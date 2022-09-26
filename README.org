@@ -1,0 +1,64 @@
+* SimpleTernaryLogic (STL)
+A small library to evaluate ternary logic expressions under various systems.
+
+Common boolean logic is dictated by two values, True and False. Ternary logic allows for an intermediate value, usually I or U. Different systems designate this extra value to lean towards True or False, or be more neutral.
+
+** Installation
+No specific GHC version required. Run the following to load the library.
+
+#+begin_src sh :noeval
+ghci SimpleTernaryLogic.hs
+#+end_src
+
+** Usage
+The front-end syntax is similar to connectives in formal logic.
+
+| Logic Symbol | STL Syntax | Meaning                   |
+|--------------+------------+---------------------------|
+| ¬            | !          | Not                       |
+| ∧            | &          | And                       |
+| ∨            | ‖          | Or                        |
+| →            | >>         | Material Implication      |
+| ↔            | <->        | Biconditional Equivalence |
+
+Construct Operations (~Ops~) with lambdas. Ops take in two arbitrary Expressions and returns the specified composition:
+
+#+begin_src haskell :noeval
+type Op = Expression -> Expression -> Expression
+myOp :: Op
+myOp = (\e1 e2 -> ((e2 || e1) >> ((!) e2) <-> (e1 & e2)))
+
+myOp T F
+-- (((F ∨ T) → ¬F) ↔ (T ∧ F))
+#+end_src
+
+Remember that logic connectives are ~Ops~ themselves:
+#+begin_src haskell :noeval
+(&), (||), (>>), (<->) :: Op
+#+end_src
+
+*** Systems
+Currently, there are three supported Systems:
+
+#+begin_src haskell :noeval
+data Syst
+  = Kleene
+  | Lukasiewicz
+  | Bochvar
+#+end_src
+
+The main interface is through ~truthTable~. This evaluates the truth table of the given Op under a specified System.
+
+#+begin_src haskell :noeval
+truthTable :: Syst -> Op -> Table Expression
+truthTable Lukasiewicz myOp
+--       F.	U.	T.
+-- F:	F	F	T
+-- U:	F	U	U
+-- T:	F	T	F
+#+end_src
+
+** Resources
+- [[https://en.wikipedia.org/wiki/Three-valued_logic#%C5%81ukasiewicz_logic][Wikipedia - Three-valued Logic]]
+- [[https://en.wikipedia.org/wiki/Many-valued_logic][Wikipedia - Many-value Logic]]
+- Inspired by Janko-dev's [[https://github.com/Janko-dev/plogic][plogic]]
